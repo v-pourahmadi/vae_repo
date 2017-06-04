@@ -494,6 +494,9 @@ def test_mnist(on_cloud=0):
 def test_celeb(on_cloud=0):
     """Train an autoencoder on Celeb Net.
     """
+    os.makedirs('/output', 'checkpoints'), exist_ok=True)
+    os.makedirs('/output', 'reconstruct'), exist_ok=True)
+    os.makedirs('/output', 'manifolds'), exist_ok=True)
 
     if (on_cloud==0):
         files = CELEB()
