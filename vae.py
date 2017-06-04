@@ -235,16 +235,16 @@ def train_vae(files,
               crop_shape=[64, 64, 3],
               crop_factor=0.8,
               n_filters=[100, 100, 100, 100],
-              n_hidden=256,
+              n_hidden=0, # n_hidden=256,
               n_code=50,
               convolutional=True,
               variational=True,
               filter_sizes=[3, 3, 3, 3],
-              dropout=True,
+              dropout=False, #dropout=True,
               keep_prob=0.8,
               activation=tf.nn.relu,
-              img_step=100,
-              save_step=100,
+              img_step=300,
+              save_step=300,
               ckpt_name="vae.ckpt",
               on_cloud=0):
     """General purpose training of a (Variational) (Convolutional) Autoencoder.
@@ -508,7 +508,7 @@ def test_celeb(on_cloud=0):
         Out_directory='.'
         ckpt_name='./celeb.ckpt'
     else:
-        Out_directory='/output/'
+        Out_directory='/output/checkpoints'
         ckpt_name='/output/checkpoints/celeb.ckpt'
 
     train_vae(
@@ -521,12 +521,12 @@ def test_celeb(on_cloud=0):
         convolutional=True,
         variational=True,
         n_filters=[100, 100, 100],
-        n_hidden=250,
+        n_hidden=0, #n_hidden=250, 
         n_code=100,
-        dropout=True,
+        dropout=False, #dropout=True,
         filter_sizes=[3, 3, 3],
         activation=tf.nn.sigmoid,
-        ckpt_name='./celeb.ckpt',
+        ckpt_name=ckpt_name,
         on_cloud=on_cloud)
 
 
