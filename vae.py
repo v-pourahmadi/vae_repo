@@ -22,7 +22,8 @@ def VAE(input_shape=[None, 784],
         dropout=False,
         denoising=False,
         convolutional=False,
-        variational=False):
+        variational=False,
+        on_cloud=0):
     """(Variational) (Convolutional) (Denoising) Autoencoder.
 
     Uses tied weights.
@@ -244,7 +245,8 @@ def train_vae(files,
               activation=tf.nn.relu,
               img_step=100,
               save_step=100,
-              ckpt_name="vae.ckpt"):
+              ckpt_name="vae.ckpt",
+              on_cloud=0):
     """General purpose training of a (Variational) (Convolutional) Autoencoder.
 
     Supply a list of file paths to images, and this will do everything else.
@@ -311,7 +313,8 @@ def train_vae(files,
              n_code=n_code,
              dropout=dropout,
              filter_sizes=filter_sizes,
-             activation=activation)
+             activation=activation,
+             on_cloud=0)
 
     # Create a manifold of our inner most layer to show
     # example reconstructions.  This is one way to see
@@ -374,8 +377,13 @@ def train_vae(files,
                         ae['z']: zs,
                         ae['train']: False,
                         ae['keep_prob']: 1.0})
-                utils.montage(recon.reshape([-1] + crop_shape),
-                              'manifold_%08d.png' % t_i)
+                if (on_cloud==0):
+                    utils.montage(recon.reshape([-1] + crop_shape),
+                                  'manifold_%08d.png' % t_i)
+                else:
+                    utils.montage(recon.reshape([-1] + crop_shape),
+                                  '/output/manifolds/manifold_%08d.png' % t_i)
+
 
                 # Plot example reconstructions
                 recon = sess.run(
@@ -384,8 +392,12 @@ def train_vae(files,
                                         ae['keep_prob']: 1.0})
                 print('reconstruction (min, max, mean):',
                     recon.min(), recon.max(), recon.mean())
-                utils.montage(recon.reshape([-1] + crop_shape),
-                              'reconstruction_%08d.png' % t_i)
+                if (on_cloud==0):
+                    utils.montage(recon.reshape([-1] + crop_shape),
+                                  'reconstruction_%08d.png' % t_i)
+                else:
+                    utils.montage(recon.reshape([-1] + crop_shape),
+                                  '/output/reconstruct/reconstruction_%08d.png' % t_i)
                 t_i += 1
 
             if batch_i % save_step == 0:
@@ -408,7 +420,7 @@ def train_vae(files,
 
 
 # %%
-def test_mnist():
+def test_mnist(on_cloud=0):
     """Train an autoencoder on MNIST.
 
     This function will train an autoencoder on MNIST and also
@@ -479,10 +491,22 @@ def test_mnist():
         print('train:', train_cost / train_i, 'valid:', valid_cost / valid_i)
 
 
-def test_celeb():
+def test_celeb(on_cloud=0):
     """Train an autoencoder on Celeb Net.
     """
-    files = CELEB()
+
+    if (on_cloud==0):
+        files = CELEB()
+    else:
+        files = CELEB('/input/img_align_celeba/')
+
+    if (on_cloud==0):
+        Out_directory='.'
+        ckpt_name='./celeb.ckpt'
+    else:
+        Out_directory='/output/'
+        ckpt_name='/output/checkpoints/celeb.ckpt'
+
     train_vae(
         files=files,
         input_shape=[218, 178, 3],
@@ -498,12 +522,14 @@ def test_celeb():
         dropout=True,
         filter_sizes=[3, 3, 3],
         activation=tf.nn.sigmoid,
-        ckpt_name='./celeb.ckpt')
+        ckpt_name='./celeb.ckpt',
+        on_cloud=on_cloud)
 
 
-def test_sita():
+def test_sita(on_cloud=0):
     """Train an autoencoder on Sita Sings The Blues.
     """
+
     if not os.path.exists('sita'):
         os.system('wget http://ossguy.com/sita/Sita_Sings_the_Blues_640x360_XviD.avi')
         os.mkdir('sita')
@@ -526,8 +552,10 @@ def test_sita():
         dropout=True,
         filter_sizes=[3, 3, 3],
         activation=tf.nn.sigmoid,
-        ckpt_name='./sita.ckpt')
+        ckpt_name='./sita.ckpt',
+        on_cloud=on_cloud)
 
 
 if __name__ == '__main__':
-    test_celeb()
+    on_cloud=1
+    test_celeb(on_cloud)
