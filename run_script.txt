@@ -1,6 +1,8 @@
 
 floyd init vae
 
+git push -u origin master
+
 floyd run --gpu --env tensorflow-1.0 --data N5JGDsKC38PRs4ptchv8D6 "python vae.py"
 
 
