@@ -1,9 +1,25 @@
 
 floyd init vae
 
+git status
+
+git commit -am "....."
+
 git push -u origin master
 
 floyd run --gpu --env tensorflow-1.0 --data N5JGDsKC38PRs4ptchv8D6 "python vae.py"
+
+First Run
+https://www.floydhub.com/api/v1/resources/UYRFyisZG32tGaTvQT9FtA?content=true
+
+https://www.floydhub.com/viewer/data/Ffai4GQMiTYnT5Pj7tXhm5/eDbaUGX8Mww8n6y9ardP2F/reconstruct/
+
+
+Extended:
+https://www.floydhub.com/viewer/data/bkcx99EH4L44nkUk3gjqmm/6EmYvTi2M8eBjZEMBPAWE8/checkpoints/
+
+
+
 
 
 floyd logs -u ID

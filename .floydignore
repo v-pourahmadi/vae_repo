@@ -12,3 +12,5 @@ sdist
 var
 data
 input
+output
+img_align_celeba
