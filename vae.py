@@ -602,6 +602,6 @@ def load(checkpoint_dir, sess, saver):
 
 
 if __name__ == '__main__':
-    on_cloud=0
+    on_cloud=1
     test_celeb(on_cloud)
 
