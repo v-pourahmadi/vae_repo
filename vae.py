@@ -246,7 +246,7 @@ def train_vae(files,
               img_step=300,
               save_step=300,
               ckpt_name="vae.ckpt",
-              ckpt_name_load="vae.ckpt",
+              ckpt_load_dir="./checkpoints/",
               on_cloud=0):
     """General purpose training of a (Variational) (Convolutional) Autoencoder.
 
@@ -344,8 +344,17 @@ def train_vae(files,
     # Start up the queues for handling the image pipeline
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    if os.path.exists(ckpt_name_load + '.index') or os.path.exists(ckpt_name_load):
-        saver.restore(sess, ckpt_name_load)
+    #if os.path.exists(ckpt_name_load + '.index') or os.path.exists(ckpt_name_load):
+    #    saver.restore(sess, ckpt_name_load)
+
+    could_load, checkpoint_counter = load(ckpt_load_dir,sess, saver)
+    if could_load:
+      counter = checkpoint_counter
+      print(" [*] Load SUCCESS")
+    else:
+      print(" [!] Load failed...")
+
+
 
     # Fit all training data
     t_i = 0
@@ -515,11 +524,11 @@ def test_celeb(on_cloud=0):
     if (on_cloud==0):
         Out_directory='./checkpoints'
         ckpt_name_save='./checkpoints/celeb.ckpt'
-        ckpt_name_load='./checkpoints/celeb.ckpt'        
+        ckpt_load_dir='./checkpoints/'        
     else:
         Out_directory='/output/checkpoints'
         ckpt_name_save='/output/checkpoints/celeb.ckpt'
-        ckpt_name_load='./checkpoints/celeb.ckpt'
+        ckpt_load_dir='./checkpoints/'
 
     train_vae(
         files=files,
@@ -537,7 +546,7 @@ def test_celeb(on_cloud=0):
         filter_sizes=[3, 3, 3],
         activation=tf.nn.sigmoid,
         ckpt_name=ckpt_name_save,
-        ckpt_name_load=ckpt_name_load,
+        ckpt_load_dir=ckpt_load_dir,
         on_cloud=on_cloud)
 
 
@@ -570,7 +579,29 @@ def test_sita(on_cloud=0):
         ckpt_name='./sita.ckpt',
         on_cloud=on_cloud)
 
+def load(checkpoint_dir, sess, saver):
+    import re
+    print(" [*] Reading checkpoints...")
+
+    ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+    print(checkpoint_dir)
+    print("===")
+    if ckpt and ckpt.model_checkpoint_path:
+        ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+        print(ckpt_name)
+        print("===")
+        saver.restore(sess, os.path.join(checkpoint_dir, ckpt_name))
+        counter = int(next(re.finditer("(\d+)(?!.*\d)",ckpt_name)).group(0))
+        print(" [*] Success to read {}".format(ckpt_name))
+        return True, counter
+    else:
+        print(" [*] Failed to find a checkpoint")
+        return False, 0
+
+
+
 
 if __name__ == '__main__':
-    on_cloud=1
+    on_cloud=0
     test_celeb(on_cloud)
+
