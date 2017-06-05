@@ -246,6 +246,7 @@ def train_vae(files,
               img_step=300,
               save_step=300,
               ckpt_name="vae.ckpt",
+              ckpt_name_load="vae.ckpt",
               on_cloud=0):
     """General purpose training of a (Variational) (Convolutional) Autoencoder.
 
@@ -343,8 +344,8 @@ def train_vae(files,
     # Start up the queues for handling the image pipeline
     threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    if os.path.exists(ckpt_name + '.index') or os.path.exists(ckpt_name):
-        saver.restore(sess, ckpt_name)
+    if os.path.exists(ckpt_name_load + '.index') or os.path.exists(ckpt_name_load):
+        saver.restore(sess, ckpt_name_load)
 
     # Fit all training data
     t_i = 0
@@ -353,7 +354,10 @@ def train_vae(files,
     cost = 0
     n_files = len(files)
     test_xs = sess.run(batch) / 255.0
-    utils.montage(test_xs, 'test_xs.png')
+    if (on_cloud==0):
+        utils.montage(test_xs, 'test_xs.png')
+    else:
+        utils.montage(test_xs, '/output/test_xs.png')
     try:
         while not coord.should_stop() and epoch_i < n_epochs:
             batch_i += 1
@@ -455,7 +459,11 @@ def test_mnist(on_cloud=0):
     batch_size = 200
     n_epochs = 10
     test_xs = mnist.test.images[:n_examples]
-    utils.montage(test_xs.reshape((-1, 28, 28)), 'test_xs.png')
+    if (on_cloud==0):
+        utils.montage(test_xs.reshape((-1, 28, 28)), 'test_xs.png')
+    else:
+        utils.montage(test_xs.reshape((-1, 28, 28)), '/output/test_xs.png')
+
     for epoch_i in range(n_epochs):
         train_i = 0
         train_cost = 0
@@ -505,11 +513,13 @@ def test_celeb(on_cloud=0):
         files = CELEB('/input/img_align_celeba/')
 
     if (on_cloud==0):
-        Out_directory='.'
-        ckpt_name='./celeb.ckpt'
+        Out_directory='./checkpoints'
+        ckpt_name_save='./checkpoints/celeb.ckpt'
+        ckpt_name_load='./checkpoints/celeb.ckpt'        
     else:
         Out_directory='/output/checkpoints'
-        ckpt_name='/output/checkpoints/celeb.ckpt'
+        ckpt_name_save='/output/checkpoints/celeb.ckpt'
+        ckpt_name_load='./checkpoints/celeb.ckpt'
 
     train_vae(
         files=files,
@@ -526,7 +536,8 @@ def test_celeb(on_cloud=0):
         dropout=False, #dropout=True,
         filter_sizes=[3, 3, 3],
         activation=tf.nn.sigmoid,
-        ckpt_name=ckpt_name,
+        ckpt_name=ckpt_name_save,
+        ckpt_name_load=ckpt_name_load,
         on_cloud=on_cloud)
 
 
